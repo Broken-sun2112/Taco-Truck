@@ -63,10 +63,10 @@ public class Dao {
         }
 
     }
-    
-    public boolean update(Product product){
+
+    public boolean update(Product product) {
         String sql = "update product set name = ?, price = ? where id = ?";
-        
+
         try {
             ps = con.prepareStatement(sql);
             ps.setString(1, product.getName());
@@ -75,46 +75,43 @@ public class Dao {
             return ps.executeUpdate() > 0;
         } catch (Exception ex) {
             return false;
-           
+
         }
-        
+
     }
 
-    
-      public int getMaxRowAOrderTable(){
+    public int getMaxRowAOrderTable() {
         int row = 0;
-        try{
+        try {
             st = con.createStatement();
             rs = st.executeQuery("select max(cid) from cart");
-        while(rs.next())
-        {
-            row = rs.getInt(1);
-        }
-        } catch (Exception ex){
+            while (rs.next()) {
+                row = rs.getInt(1);
+            }
+        } catch (Exception ex) {
             Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return row + 1;
     }
-    
-    public boolean isProductExist(int cid, int pid){
+
+    public boolean isProductExist(int cid, int pid) {
         try {
             ps = con.prepareStatement("select * from cart where cid = ? and pid = ?");
             ps.setInt(1, cid);
             ps.setInt(2, pid);
             rs = ps.executeQuery();
-            if(rs.next()){
+            if (rs.next()) {
                 return true;
             }
         } catch (Exception ex) {
             Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return false;
     }
-    
-    
-    public boolean insertCart(Cart cart){
+
+    public boolean insertCart(Cart cart) {
         String sql = "insert into cart (cid, pid, pName, qty, price, total) valuse(?,?,?,?,?,?)";
         try {
             ps = con.prepareStatement(sql);
@@ -125,13 +122,25 @@ public class Dao {
             ps.setDouble(5, cart.getPrice());
             ps.setDouble(6, cart.getTotal());
             return ps.executeUpdate() > 0;
-            
+
         } catch (Exception ex) {
             return false;
         }
-        
+
     }
-    
+
+    public boolean delete(Product product) {
+        try {
+            ps = con.prepareStatement("delete from product where id = ?");
+            ps.setInt(1, product.getId());
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception ex) {
+            return false;
+        }
+
+    }
+
     public int getMaxRowAPaymentTable() {
         int row = 0;
         try {
@@ -146,7 +155,8 @@ public class Dao {
 
         return row + 1;
     }
-     public int getMaxRowACartTable() {
+
+    public int getMaxRowACartTable() {
         int row = 0;
         try {
             st = con.createStatement();
@@ -160,33 +170,32 @@ public class Dao {
 
         return row;
     }
-    
-    public double subTotal(){
+
+    public double subTotal() {
         double subTotal = 0.0;
         int cid = getMaxRowACartTable();
-        
+
         try {
             st = con.createStatement();
-             rs = st.executeQuery("select sum(total) as 'total' from cart where cid = '" + cid+"'");
-             
-             
-             if(rs.next()){
-                 subTotal = rs.getDouble(1);
-             }
+            rs = st.executeQuery("select sum(total) as 'total' from cart where cid = '" + cid + "'");
+
+            if (rs.next()) {
+                subTotal = rs.getDouble(1);
+            }
         } catch (Exception ex) {
             Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
         }
         return subTotal;
     }
-        public void getProductsFromCart(JTable table) {
-            int cid = getMaxRowACartTable();
+
+    public void getProductsFromCart(JTable table) {
+        int cid = getMaxRowACartTable();
         String sql = "select * from product cart where cid = ?";
-        
+
         try {
             ps = con.prepareStatement(sql);
             ps.setInt(1, cid);
             rs = ps.executeQuery();
-            
 
             DefaultTableModel model = (DefaultTableModel) table.getModel();
 
@@ -204,6 +213,110 @@ public class Dao {
         } catch (Exception ex) {
             Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
+
+    public boolean insertPayemnt(Payment payment) {
+        String sql = "insert into payment (pid, cName, priod, pName, total, pdate) values(?,?,?,?,?,?)";
+        try {
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, payment.getPid());
+            ps.setString(2, payment.getcName());
+            ps.setString(3, payment.getProId());
+            ps.setString(4, payment.getProName());
+            ps.setDouble(5, payment.getTotal());
+            ps.setString(6, payment.getDate());
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    public boolean deleteCart(int cid) {
+        try {
+            ps = con.prepareStatement("delete from cart where cid = ?");
+            ps.setInt(1, cid);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception ex) {
+            return false;
+        }
+
+    }
+
+    public void getPaymenDetails(JTable table) {
+        String sql = "select * from product payment order by pid desc";
+
+        try {
+            ps = con.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+            Object[] row;
+            while (rs.next()) {
+                row = new Object[6];
+                row[0] = rs.getInt(1);
+                row[1] = rs.getString(2);
+                row[2] = rs.getString(3);
+                row[3] = rs.getString(4);
+                row[4] = rs.getDouble(5);
+                row[5] = rs.getString(6);
+                model.addRow(row);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    public int totalProducts() {
+        int total = 0;
+
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("select count(*) as 'total' from product");
+            
+            if (rs.next()) {
+                total = rs.getInt(1);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return total;
+    }
+    
+    public double TodayRevenue(String date) {
+        double total = 0.0;
+
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("select sum(total) as 'total' from payment where pdate = '" + date + "'");
+            
+            if (rs.next()) {
+                total = rs.getDouble(1);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return total;
+    }
+    
+    public double TotalRevenue(){
+        double total = 0.0;
+
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("select sum(total) as 'total' from payment");
+            
+            if (rs.next()) {
+                total = rs.getDouble(1);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return total;
+    }
+
 }

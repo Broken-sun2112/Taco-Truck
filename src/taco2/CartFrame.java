@@ -325,37 +325,116 @@ public class CartFrame extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
+
+     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
+        // TODO add your handling code here:
+        model = (DefaultTableModel) jTable1.getModel(); 
+        String proName = "";
+        String proId = ""; 
+        for(int i = 0; i < model.getRowCount(); i++){
+            proId += model.getValueAt(i, 1).toString()+ ", ";
+            proName += model.getValueAt(i, 2).toString()+ ", ";
+        }
+
+        int pid = dao.getMaxRowAPaymentTable() + 1;
+        String cName = jTextField6.getText().trim();
+        double t = Double.parseDouble(jTextField5.getText().trim());
+        
+        
+        Payment payment = new Payment();
+        payment.setPid(pid);
+        payment.setcName(cName);
+        payment.setproId(proId);
+        payment.setProName(proName);
+        payment.setTotal(t);
+        payment.setDate(jTextField2.getText().trim());
+        if(check()){
+            if(dao.insertPayment(payment)){
+                JOptionPane.showMessageDialog(this, "Payment Succeed!!");
+                int cid = Integer.parseInt(model.getValueAt(rowIndex, 0).toString());
+                dao.deleteCart(cid);
+
+                    int x = JOptionPane.showConfirmDialog(this, "Do you want to print the receipt?", "Print", JOptionPane.YES_NO_OPTION, 0);
+                    if (x ==JOptionPane.YES_OPTION){
+                        MessageFormat header = MessageFormat("Food Managing System"+ "Customer Name:"+ cName+ " "+ "Total($): "+ t);
+                        MessageFormat footer = new MessageFormat("Page{0 , number, integer}");
+                        jTable1.print(JTable.PrintMode.FIT_WIDTH, header, footer);
+                        setVisible(false);
+
+                    } catch (PrinterException ex) {
+                            JOptionPane.showMessageDialog(null, ex.getMessage());
+                            }
+                }else{
+                    JOptionPane.showMessageDialog(this, "Payment Failed..","Warning", 2);
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CartFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CartFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CartFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CartFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new CartFrame().setVisible(true);
-            }
-        });
+        }
+        
+         public boolean check(){
+        if(jTextField6.getText().isEmpty()){
+            JOptionPane.showMessageDialog(this, "Customer name is required", "Warning",2);
+            return false;
+        }if(jTextField7.getText().isEmpty()){
+            JOptionPane.showMessageDialog(this, "Cash is required", "Warning",2);
+            return false;
+        }
+        double change = Double.parseDouble(jTextField8.getText().trim());
+        if(change < 0.0){
+            JOptionPane.showMessageDialog(this, "Not enough cash entered", "Warning", 2);
+            return false;
+        }
+
+        return true; 
     }
+        
+        
+    private void jTextField8ActionPerformed(java.awt.event.ActionEvent evt) {
+        // TODO add your handling code here:
+
+
+    }  
+    private void jTextField8KeyReleased(java.awt.event.KeyEvent evt) {
+        // TODO add your handling code here:
+        cash();
+    }
+                
+    private void jTextField7KeyReleased(java.awt.event.KeyEvent evt) {
+        // TODO add your handling code here:
+        cash();
+    }
+    
+    
+    public void cash(){
+        try {
+            double cash = Double.parseDouble(jTextField7.getText().trim());
+            double total = Double.parseDouble(jTextField5.getText().trim());
+            double change = (cash- total);
+            jTextField8.setText(String.valueOf(change));
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Not enough cash entered", "Warning", 2);
+        }
+    }   
+
+    }
+
+    public boolean check(){
+        if(jTextField6.getText().isEmpty()){
+            JOptionPane.showMessageDialog(this, "Customer name is required", "Warning",2);
+            return false;
+        }if(jTextField7.getText().isEmpty()){
+            JOptionPane.showMessageDialog(this, "Cash is required", "Warning",2);
+            return false;
+        }
+        double change = Double.parseDouble(jTextField8.getText().trim());
+        if(change < 0.0){
+            JOptionPane.showMessageDialog(this, "Not enough cash entered", "Warning", 2);
+            return false;
+        }
+
+     
+     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton3;
